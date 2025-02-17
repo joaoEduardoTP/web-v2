@@ -60,7 +60,6 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 function App() {
   useEffect(() => {
     const PORTAL = import.meta.env.VITE_PORTAL_URL;
-    console.log('PORTAL URL', PORTAL);
     const getToken = async () => {
 
       const response = axios.post(`${ PORTAL }/crete_access_token`, {

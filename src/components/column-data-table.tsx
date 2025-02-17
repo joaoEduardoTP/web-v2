@@ -34,13 +34,15 @@ export function DataTableColumnHeader<TData, TValue>({
             className={ cn("-ml-3 data-[state=open]:bg-accent", "max-w-[120px]", "flex items-center justify-between") }
           >
             <span>{ title }</span>
-            { column.getIsSorted() === "desc" ? (
-              <ArrowDown />
-            ) : column.getIsSorted() === "asc" ? (
-              <ArrowUp />
-            ) : (
-              <ChevronsUpDown />
-            ) }
+            <div className="w-4">
+              { column.getIsSorted() === "desc" ? (
+                <ArrowDown />
+              ) : column.getIsSorted() === "asc" ? (
+                <ArrowUp />
+              ) : (
+                <ChevronsUpDown />
+              ) }
+            </div>
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">

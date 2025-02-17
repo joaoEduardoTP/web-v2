@@ -13,7 +13,7 @@ import { Loader2 } from "lucide-react";
 type AlertProps = {
   title: string;
   desc: string;
-  onConfirm: () => void;
+  onConfirm?: () => void;
   onCancel: () => void;
   confirmButtonText?: string;
   cancelButtonText?: string;
