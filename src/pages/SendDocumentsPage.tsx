@@ -10,6 +10,7 @@ import { DeliveryData, TravelDocument } from '@/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { Loader2, RefreshCw } from 'lucide-react';
+import { DateTime } from 'luxon';
 import { useCallback, useEffect, useState } from 'react';
 
 export function SendDocumentsPage() {
@@ -76,7 +77,7 @@ export function SendDocumentsPage() {
 
   const handleConfirmSendDocuments = async () => {
     if (!baseId || !deliveryMethodData) return;
-    console.log('Dados de entrega:', selectedDocuments);
+    // console.log('Dados de entrega:', selectedDocuments);
     const documentsToSend = selectedDocuments.map((doc) => doc.identifier);
 
     const deliveryData: DeliveryData = {
@@ -86,9 +87,8 @@ export function SendDocumentsPage() {
       tracking: deliveryMethodData.tracking,
       vehiclePlate: deliveryMethodData.vehiclePlate,
       sendEmail: user.email_login,
-      sendDate: new Date().toISOString(),
+      sendDate: DateTime.now().setZone("America/Sao_Paulo").toISO() || '', 
     };
-    console.log('Dados de entrega:', deliveryData);
 
     try {
       await dispatchDocumentsMutation.mutateAsync(deliveryData);
@@ -111,12 +111,14 @@ export function SendDocumentsPage() {
   const handleConfirmMoreDocuments = () => {
     setIsSuccessModalOpen(false);
     setSelectedDocuments([]);
+    window.location.reload()
   };
 
   const handleCloseSuccessModal = () => {
     setIsSuccessModalOpen(false);
     setSelectedDocuments([]);
-    navigate({ to: "/" });
+    window.location.href = "/";
+    // navigate({ to: "/" });
   };
 
   function handleCancelDeliveryModal(): void {
@@ -126,7 +128,7 @@ export function SendDocumentsPage() {
   return (
     user &&
     baseId && (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[92vw] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold text-foreground">
@@ -148,7 +150,7 @@ export function SendDocumentsPage() {
         <div className="mb-8">
           { isLoading && <div>Carregando documentos registrados...</div> }
           { isError && <div>Erro ao carregar documentos registrados.</div> }
-          <DataTable
+          <DataTable<TravelDocument>
             key="registered-documents"
             columns={ documentColumns }
             data={ registeredDocuments }
@@ -187,6 +189,8 @@ export function SendDocumentsPage() {
         />
 
         <SuccessModal
+          title="Documentos Enviados com sucesso!"
+          description="Deseja enviar mais documentos?"
           isOpen={ isSuccessModalOpen }
           onClose={ handleCloseSuccessModal }
           onConfirm={ handleConfirmMoreDocuments }

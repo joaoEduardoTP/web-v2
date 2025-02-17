@@ -32,13 +32,10 @@ export const useAuthStore = create<AuthState>()(
           let attempts = 0;
 
           while (!token && attempts < 3) {
-            console.log("Tentando obter token...");
             attempts++;
           }
 
           const userLoggedIn = jwtDecode(token as string).sub;
-
-          console.log(token);
 
           const response = axios.get(`${ PORTAL_URL}/api/user/${ userLoggedIn }`, { headers: { Authorization: `Bearer ${ token }` } });
           const credentials = await response;

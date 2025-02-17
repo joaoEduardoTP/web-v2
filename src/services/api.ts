@@ -32,7 +32,6 @@ export const documentService = {
   // Entrega
   getTravelDocuments: async (filters: SendDocumentFilters): Promise<TravelDocument[]> => {
     const { baseId, ...rest } = filters;
-    console.log('Filtros', filters)
 
     const response = await api.get(
       `${ API }/travel-documents`,
@@ -45,21 +44,15 @@ export const documentService = {
 
     
     const travelDocuments = formatDates(await response.data)
-    
-    setTimeout(() => {
-      console.log('DOCUMENTOS', travelDocuments)
-    },1500)
+  
 
-    return travelDocuments;
+    return  travelDocuments;
   },
 
   sendDocuments: async (documentsPayload: SendDocumentsPayload) => {
     const {baseId, documents, receiptDate,receiptEmail} = documentsPayload
     const formattedDocuments = parseDates(documents)
-    console.log('EU ESTOU AQUI')
 
-
-    
     const payload = { 
       status: 'Entregue na Base',
       baseId,
@@ -67,19 +60,11 @@ export const documentService = {
       receiptDate,
       receiptEmail
     }
-
-
-    console.log('PAYLOAD PARA ENVIAR OS DOCUMETNOS',payload)
-    
   
     const response = await axios.post(
       `${ API }/travel-documents/confirm`,
       payload,
     );
-
-    console.log('RESPOSTA DO ENVIO',await response.data)
-    console.log('RESPOSTA DO ENVIO', response.status)
-
     return await response.data;
   },
 
@@ -106,6 +91,7 @@ export const documentService = {
     const getArrivedDocuments = formatDates(await response.data)
     return getArrivedDocuments
   },
+
   setDocumentsAsReceived: async (documentsPayload: ReceivedDocumentsPayload) => {
     console.log('PAYLOAD: documentsAsReceived',documentsPayload)
     const response = await axios.post(`${ API }/travel-documents/receive`, documentsPayload);
@@ -122,20 +108,19 @@ export const documentService = {
     const documents = formatedDates.map((document) => {
       return {
         ...document,
-        sendDate: document.sendDate || 'Não informado',
-        sendEmail: document.sendEmail || 'Não informado',
+        sendDate: document.sendDate,
+        sendEmail: document.sendEmail,
 
-        dischargeDate: document.dischargeDate || 'Não informado',
-        dischargeEmail: document.dischargeEmail || 'Não informado',
+        dischargeDate: document.dischargeDate,
+        dischargeEmail: document.dischargeEmail,
 
         tracking: document.tracking || 'Não informado',
 
         endDate: document.endDate || 'Não informado',
         unloadingEndDate: document.unloadingEndDate || 'Não informado',
-        sendMethod: document.sendMethod?  formatDeliveryMethod(document.sendMethod as DeliveryMethod) : 'Não informado'
+        sendMethod: document.sendMethod
       }
     })
-    console.log( 'OS DOCUMENTOS', documents)
     return documents
 
     // const documentsWithDates = formatDates(await response.data).map((document.) => {

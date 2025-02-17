@@ -4,7 +4,6 @@ export enum DocumentStatus {
   RECEBIDO = "Recebido na Matriz",
 }
 
-
 export enum DeliveryMethod {
   ONIBUS = "onibus",
   CORREIOS = "correios",
@@ -34,7 +33,7 @@ export interface SendDocumentsPayload {
   receiptEmail: string;
 };
 export interface ReceivedDocumentsPayload {
-  identifers: string[];
+  identifiers: string[];
   baseId: string;
   dischargeDate: string;
   dischargeEmail: string;

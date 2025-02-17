@@ -21,7 +21,7 @@ const MonitoringPage = () => {
 
   return (
     user && bases && (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[92vw] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-2 mb-8">
           <h1 className="text-2xl font-bold text-foreground">
             Monitoramento de Documentos

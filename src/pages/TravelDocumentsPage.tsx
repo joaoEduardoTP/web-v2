@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/form";
 import { documentService as apiDocumentService } from '@/services/api';
 
+import { DateTime } from 'luxon';
 import DataTable from '@/components/data-table';
 import { documentColumns } from '@/components/document-columns';
 import SuccessModal from '@/components/success-modal';
@@ -20,10 +21,10 @@ import { Input } from '@/components/ui/input';
 import { useAuthStore } from '@/store/authStore';
 import { SendDocumentFilters, TravelDocument } from '@/types';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useNavigate } from '@tanstack/react-router';
 import { useCallback, useMemo, useState } from 'react'; // Import useCallback aqui
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { useNavigate } from '@tanstack/react-router';
 
 const REGEX_MERCOSUL = /^[a-zA-Z]{3}[0-9][A-Za-z0-9][0-9]{2}$/;
 
@@ -74,7 +75,6 @@ export function TravelDocumentsPage() {
 
   const [selectedDocuments, setSelectedDocuments] = useState<TravelDocument[]>([]);
   const [parentRowSelection, setParentRowSelection] = useState({});
-  const [isDataTableLoading, setIsDataTableLoading] = useState(false);
   // const [isLoadingModalOpen, setIsLoadingModalOpen] = useState(false); // New loading modal state
 
   const {
@@ -85,13 +85,8 @@ export function TravelDocumentsPage() {
   } = useQuery<TravelDocument[], Error>({
     queryKey: ["travel-documents", currentFilters],
     queryFn: async () => {
-      console.log("Query travel-documents queryFn executando com filtros:", currentFilters);
-      setIsDataTableLoading(true);
-      try {
-        return await apiDocumentService.getTravelDocuments(currentFilters);
-      } finally {
-        setIsDataTableLoading(false);
-      }
+      const data = await apiDocumentService.getTravelDocuments(currentFilters);
+      return data;
     },
     enabled: false,
   });
@@ -108,6 +103,8 @@ export function TravelDocumentsPage() {
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [documentsToConfirm, setDocumentsToConfirm] = useState<TravelDocument[]>([]);
+  const [isLoadingModalOpen, setIsLoadingModalOpen] = useState(false); 
+
   const documentColumnsMemoized = useMemo(() => documentColumns, []);
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
@@ -131,23 +128,17 @@ export function TravelDocumentsPage() {
 
   const sendDocumentsMutation = useMutation({
     mutationFn: apiDocumentService.sendDocuments,
+    onMutate: () => setIsLoadingModalOpen(true),
     onSuccess: async () => {
-      console.log("Mutation sendDocuments onSuccess chamado!");
-
-      await queryClient.invalidateQueries({ queryKey: ["travel-documents", currentFilters] });
-      console.log("InvalidateQueries travel-documents com filtros:", currentFilters);
-
-      // setTimeout(() => { // Introduce a delay of 5 seconds
-      //   setIsLoadingModalOpen(false); // Close loading modal after delay
-      //   setIsSuccessModalOpen(true); // Open success modal
-      //   setSelectedDocuments([]);
-      // }, 5000); // 5000 milliseconds = 5 seconds
-
+      setIsLoadingModalOpen(false);
+      setIsSuccessModalOpen(true);
+      setSelectedDocuments([]);
+      setParentRowSelection({});
+      form.reset();
+      await queryClient.invalidateQueries({ queryKey: ["travel-documents"] });
     },
     onError: (error) => {
-      // setTimeout(() => { // Introduce a delay of 5 seconds even on error
-      //   setIsLoadingModalOpen(false); // Ensure loading modal is closed after delay even on error
-      // }, 5000);
+      setIsLoadingModalOpen(false);
       console.error("Erro ao enviar documentos Mutation:", error);
     },
   });
@@ -167,21 +158,19 @@ export function TravelDocumentsPage() {
   };
 
   const handleConfirmSendDocuments = async () => {
-    setIsConfirmationOpen(false); // Close confirmation modal immediately
-    // setIsLoadingModalOpen(true); // Open loading modal
+    setIsConfirmationOpen(false);
+    // setIsLoadingModalOpen(true); 
 
     try {
-      console.log("Enviando documentos...", documentsToConfirm);
       const payload = {
         documents: documentsToConfirm,
-        receiptDate: new Date().toISOString(),
+        receiptDate: String(DateTime.now().setZone("America/Sao_Paulo").toISO()),
         baseId: String(bases[0]?.id) || "",
         receiptEmail: user.email_login,
       };
 
       await sendDocumentsMutation.mutateAsync(payload);
 
-      console.log("Enviado! ...");
     } catch (error) {
 
       console.error("Erro ao enviar os documentos:", error);
@@ -193,29 +182,53 @@ export function TravelDocumentsPage() {
     }
   };
 
+
+  // const handleConfirmSendDocuments = async () => {
+  //   // setIsConfirmationOpen(false); // ✅ Fechar modal de confirmação imediatamente
+  //   // setIsLoadingModalOpen(true); // ✅ Abrir modal de loading ANTES da mutação
+
+  //   try {
+  //     console.log("Enviando documentos...", documentsToConfirm);
+  //     const payload = {
+  //       documents: documentsToConfirm,
+  //       receiptDate: new Date().toISOString(),
+  //       baseId: String(bases[0]?.id) || "",
+  //       receiptEmail: user.email_login,
+  //     };
+
+  //     sendDocumentsMutation.mutateAsync(payload);
+
+  //     console.log("Enviado! ...");
+
+  //   } catch (error) {
+  //     console.error("Erro ao enviar os documentos:", error);
+  //     setIsLoadingModalOpen(false); // ✅ Fechar modal de loading em caso de erro TAMBÉM!
+  //   } finally {
+  //     console.log("Processo de envio finalizado (com ou sem erro).");
+  //   }
+  // };
+
   const handleCancelConfirmation = () => {
-    console.log("Cancelar envio de documentos");
+    // console.log("Cancelar envio de documentos");
     setIsConfirmationOpen(false);
     setDocumentsToConfirm([]);
   };
 
   const handleConfirmMoreDocuments = () => {
-    console.log('Confirmar mais documentos');
-    setIsSuccessModalOpen(false);
-    form.reset();
-    // setSelectedDocuments([]);
+    // console.log('Confirmar mais documentos');
+    window.location.reload();
   };
 
   const handleCloseSuccessModal = () => {
-    console.log('Fechar modal de sucesso');
+    // console.log('Fechar modal de sucesso');
     setIsSuccessModalOpen(false);
-    // setSelectedDocuments([]);
-    navigate({ to: "/" });
+    setSelectedDocuments([]);
+    window.location.href = "/";
   };
 
   return (
     user && bases && (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[92vw] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-2 mb-8">
           <FileText className="h-6 w-6 text-blue-600" />
           <h1 className="text-2xl font-bold text-foreground">
@@ -272,12 +285,13 @@ export function TravelDocumentsPage() {
               <div className="flex justify-end">
                 <Button
                   type="submit"
-                  disabled={ searchDocuments.isPending }
+                  disabled={ isLoading } // Usar isLoading do useQuery
                 >
-                  { searchDocuments.isPending && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  { isLoading ? ( // Usar isLoading do useQuery
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  ) : (
+                    <CheckCircle className="h-5 w-5 mr-2" />
                   ) }
-                  <CheckCircle className="h-5 w-5 mr-2" />
                   Buscar Documentos
                 </Button>
               </div>
@@ -289,7 +303,7 @@ export function TravelDocumentsPage() {
         <div className="mb-8">
           { isLoading && <div>Carregando documentos...</div> }
           { isError && <div>Erro ao buscar.</div> }
-          <DataTable
+          <DataTable<TravelDocument>
             columns={ documentColumnsMemoized }
             data={ documents }
             onRowSelectionChangeParent={ handleSelectionChange }
@@ -304,46 +318,44 @@ export function TravelDocumentsPage() {
           <Button
             variant="default"
             onClick={ handleSendSelected }
-            disabled={ selectedDocuments.length === 0 || sendDocumentsMutation.isPending || isDataTableLoading  }
+            disabled={ selectedDocuments.length === 0 || sendDocumentsMutation.isPending }
           >
-            { sendDocumentsMutation.isPending || isDataTableLoading  && <Loader2 className="mr-2 h-4 w-4 animate-spin" /> }
+            { sendDocumentsMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" /> }
             Enviar Selecionados ({ selectedDocuments.length })
           </Button>
         </div>
 
         {/* Success Modal */ }
         <SuccessModal
+          title="Documentos Entregues!"
+          description="Deseja registrar mais documentos?"
           isOpen={ isSuccessModalOpen }
           onClose={ handleCloseSuccessModal }
           onConfirm={ handleConfirmMoreDocuments }
         />
 
         {/* Confirmation / Loading Modal */ }
-        {/* <Alert
-          isOpen={ isLoadingModalOpen } // Show only when loading modal is open
-          onOpenChange={ setIsLoadingModalOpen } // Control isOpen with setIsLoadingModalOpen
-          title={ "Enviando Documentos..." } // Title for loading state
-          desc={ "Aguarde enquanto os documentos são enviados e a lista é atualizada." } // Description for loading state
-          onConfirm={ handleConfirmSendDocuments } // Keep the handlers, but they might not be used in loading state
-          onCancel={ handleCancelConfirmation }
-          confirmButtonText="Confirmar Envio"
-          cancelButtonText="Cancelar"
-          loading={ sendDocumentsMutation.isPending && isLoadingModalOpen } // Indicate loading state to Alert
-          disabledConfirm={ sendDocumentsMutation.isPending || isLoadingModalOpen } // Disable confirm button
-          disabledCancel={ sendDocumentsMutation.isPending || isLoadingModalOpen } // Disable cancel button
-          showCancelButton={ false } // Hide Cancel button during loading
-          showConfirmButton={ false } // Hide Confirm button during loading
-        /> */}
+        <Alert
+          isOpen={ isLoadingModalOpen } // Controla com isLoadingModalOpen
+          onOpenChange={ setIsLoadingModalOpen } // Controla isLoadingModalOpen
+          title={ "Enviando Documentos..." } // Título para loading
+          desc={ `Aguarde enquanto os documentos são enviados...}` } // Descrição para loading
+          loading={ sendDocumentsMutation.isPending } // ✅ Loading baseado em sendDocumentsMutation.isPending
+          disabledConfirm={ true } // Desabilita o botão de confirmar (não visível)
+          disabledCancel={ true } // Desabilita o botão de cancelar (não visível)
+          showCancelButton={ false } // Esconde botão de cancelar
+          showConfirmButton={ false } // Esconde botão de confirmar
+        />
 
         {/* Confirmation Modal (Shown before Loading) */ }
         <Alert
-          isOpen={ isConfirmationOpen  } // Show only when confirmation is open and NOT loading
+          isOpen={ isConfirmationOpen } // Show only when confirmation is open and NOT loading
           onOpenChange={ setIsConfirmationOpen } // Control isOpen with setIsConfirmationOpen
-          title="Confirmar Envio"
-          desc={ `Deseja enviar ${ documentsToConfirm.length } documento(s)?` }
+          title="Confirmar Entrega de Documentos"
+          desc={ `Deseja entregar ${ documentsToConfirm.length } documento(s)?` }
           onConfirm={ handleConfirmSendDocuments }
           onCancel={ handleCancelConfirmation }
-          confirmButtonText="Confirmar Envio"
+          confirmButtonText="Confirmar Entrega"
           cancelButtonText="Cancelar"
           showCancelButton={ true } // Show Cancel button for confirmation
           showConfirmButton={ true } // Show Confirm button for confirmation
