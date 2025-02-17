@@ -1,21 +1,28 @@
 import { Alert } from '@/components/alert';
 import DataTable from '@/components/data-table';
-import { FormValues } from '@/components/delivery-modal';
 import { documentColumns } from '@/components/document-columns';
 import SuccessModal from '@/components/success-modal';
 import { Button } from "@/components/ui/button";
 import { documentService as apiDocumentService } from '@/services/api';
 import { useAuthStore } from '@/store/authStore';
-import { ReceivedDocumentData, ReceivedDocumentsPayload, TravelDocument } from '@/types';
+import { ReceivedDocumentData, TravelDocument } from '@/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { Loader2, RefreshCw } from 'lucide-react';
+import { DateTime } from 'luxon';
 import { useCallback, useEffect, useState } from 'react';
 
 export function DischargeDocumentsPage() {
-  const user = useAuthStore((state) => state.user);
+  const credentials = useAuthStore((state) => state.user);
+
+  if (!credentials) {
+    return null;
+  }
+
+  const { user, bases } = credentials;
+
   const queryClient = useQueryClient();
-  const baseId = user?.baseId;
+  const baseId = String(bases[0]?.id);
   const [selectedDocuments, setSelectedDocuments] = useState<TravelDocument[]>([]);
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
@@ -64,14 +71,16 @@ export function DischargeDocumentsPage() {
 
   const handleConfirmSendDocuments = async () => {
     if (!baseId) return;
-    console.log('Dados de entrega:', selectedDocuments);
+    // console.log('Dados de entrega:', selectedDocuments);
     const documentsToSend = selectedDocuments.map((doc) => doc.identifier);
+
+    const dischargeDate = String(DateTime.now().setZone("America/Sao_Paulo").toISO());
 
     const receivedDocumentData: ReceivedDocumentData = {
       identifiers: documentsToSend,
       baseId: baseId,
-      dischargeDate: new Date().toISOString(),
-      dischargeEmail: user.email,
+      dischargeDate: dischargeDate,
+      dischargeEmail: user.email_login,
     };
 
 
@@ -108,7 +117,7 @@ export function DischargeDocumentsPage() {
   return (
     user &&
     baseId && (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[92vw] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold text-foreground">
@@ -130,7 +139,7 @@ export function DischargeDocumentsPage() {
         <div className="mb-8">
           { isLoading && <div>Carregando documentos registrados...</div> }
           { isError && <div>Erro ao carregar documentos registrados.</div> }
-          <DataTable
+          <DataTable<TravelDocument>
             key="registered-documents"
             columns={ documentColumns }
             data={ arrivedDocuments }
@@ -163,6 +172,8 @@ export function DischargeDocumentsPage() {
         />
 
         <SuccessModal
+          title="Documentos Baixados com sucesso!"
+          description="Deseja realizar a baixa de mais documentos?" 
           isOpen={ isSuccessModalOpen }
           onClose={ handleCloseSuccessModal }
           onConfirm={ handleConfirmMoreDocuments }

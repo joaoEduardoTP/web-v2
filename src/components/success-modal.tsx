@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 
 type SuccessModalProps = {
   isOpen: boolean;
+  title: string;
+  description: string;
   onClose: () => void;
   onConfirm: () => void;
 };
@@ -18,14 +20,16 @@ export default function SuccessModal({
   isOpen,
   onClose,
   onConfirm,
+  title,
+  description,
 }: SuccessModalProps) {
   return (
     <Dialog open={ isOpen } onOpenChange={ onClose }>
       <DialogContent className=" bg-card sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Documentos Registrados com Sucesso!</DialogTitle>
+          <DialogTitle>{ title }</DialogTitle>
           <DialogDescription>
-            Deseja cadastrar mais documentos?
+            { description }
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>

@@ -3,6 +3,7 @@ import { EnvelopeList } from '../components/EnvelopeList';
 import { DispatchForm } from '../components/DispatchForm';
 import { Envelope, DispatchMethod } from '../types';
 import { Search } from 'lucide-react';
+import { DateTime } from 'luxon';
 
 export function EnvelopesPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -29,7 +30,7 @@ export function EnvelopesPage() {
         trailerPlate: 'XYZ5678',
         driverName: 'João Silva',
         status: 'MOTORISTA_TRANSITO_FILIAL',
-        dispatchDate: new Date().toISOString()
+        dispatchDate: String(DateTime.now().setZone("America/Sao_Paulo").toISO()),
       };
       
       setEnvelopes([mockEnvelope]);
@@ -80,7 +81,7 @@ export function EnvelopesPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="max-w-[92vw] mx-auto px-4 sm:px-6 lg:px-8">
       <h1 className="text-2xl font-bold text-foreground mb-8">
         Envio de Envelopes
       </h1>

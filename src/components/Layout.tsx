@@ -27,7 +27,6 @@ export function Layout() {
   }
 
   const {  user } = credentials;
-  console.log(user);
 
   // const documentModule = modules.find(module => module.name === 'tp-documentos');
 
@@ -46,7 +45,7 @@ export function Layout() {
     <div className="min-h-screen bg-background">
       {/* Top Navigation */ }
       <nav className="bg-asideColor shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[92vw] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center gap-4">
               {/* <button

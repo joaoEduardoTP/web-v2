@@ -29,7 +29,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useState } from "react";
+import React, { useState } from "react";
 
 type DataTableProps<TData> = {
   columns: ColumnDef<TData>[];
@@ -40,7 +40,7 @@ type DataTableProps<TData> = {
 };
 
 
-export default function DataTable<TData>({ columns, data, onRowSelectionChangeParent, parentRowSelection, setParentRowSelection }: DataTableProps<TData>) {
+function DataTable<TData>({ columns, data, onRowSelectionChangeParent, parentRowSelection, setParentRowSelection }: DataTableProps<TData>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(
     []
@@ -94,7 +94,7 @@ export default function DataTable<TData>({ columns, data, onRowSelectionChangePa
           }
           className="max-w-sm"
         />
-        
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="secondary" className="ml-auto hover: bg-accent ">
@@ -199,3 +199,5 @@ export default function DataTable<TData>({ columns, data, onRowSelectionChangePa
     </div>
   );
 }
+
+export default React.memo(DataTable);

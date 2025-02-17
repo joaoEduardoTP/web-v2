@@ -111,7 +111,7 @@ export function BasesPage() {
 
 
     const newBase: Base = {
-      id: editingId || '',
+      id: editingId || '', String(DateTime.now().setZone("America/Sao_Paulo").toISO()),
       ...values,
       description: values.description || '',
       // createdAt: editingId ? bases.find(b => b.id === editingId)?.createdAt || now : now,
@@ -150,7 +150,7 @@ export function BasesPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="max-w-[92vw] mx-auto px-4 sm:px-6 lg:px-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
           <Building2 className="h-6 w-6 text-blue-600" />

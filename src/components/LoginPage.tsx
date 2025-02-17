@@ -18,7 +18,7 @@ export function LoginPage() {
       login(username);
       setError('');
       // Redirecione para a página principal ou outra página protegida aqui
-      console.log('Login bem-sucedido!');
+      // console.log('Login bem-sucedido!');
     } else {
       setError('Usuário ou senha inválidos.');
     }

@@ -34,7 +34,7 @@ export function DataTableFacetedFilter<TData, TValue>({
     <Popover>
       <PopoverTrigger asChild>
         <Button
-          variant="outline"
+          variant="secondary"
           size="sm"
           className="ml-auto hidden h-8 lg:flex">
           <FilterIcon className="w-4 h-4 mr-2" />

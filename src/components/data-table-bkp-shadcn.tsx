@@ -78,7 +78,7 @@ export default function DataTable<TData>({ columns, data }: DataTableProps<TData
         />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
+            <Button variant="secondary" className="ml-auto">
               Colunas <ChevronDown />
             </Button>
           </DropdownMenuTrigger>

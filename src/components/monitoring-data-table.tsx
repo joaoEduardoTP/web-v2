@@ -40,6 +40,7 @@ interface DataTableProps<TData, TValue> {
 const initialColumnsVisibility: VisibilityState = {
   loadingStartDate: false,
   unloadingEndDate: false,
+  docFisType: false,
   receiptEmail: false,
   receiptDate: false,
   dischargeEmail: false,
@@ -124,7 +125,7 @@ export function MonitoringDataTable<TData, TValue>({
           <DataTableViewOptions table={ table } />
         </div>
       </div>
-      <div className="rounded-md border">
+      <div className="rounded-md bg-card border">
         <Table>
           <TableHeader>
             { table.getHeaderGroups().map((headerGroup) => (
